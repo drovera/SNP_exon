@@ -18,7 +18,7 @@ from operator import itemgetter
 
 # Name of data for graph title and Path of SNP file to type here
 name_of_data = 'BCAC'
-SNP_file = 'C:/Users/danie/Documents/sunrise/BCAC/icogs_bcac_public_results_euro.genesis.assoc.txt'
+SNP_file = 'C:/Users/danie/Documents/Bio_Data/BCAC/icogs_bcac_public_results_euro.genesis.assoc.txt'
 # File with header, input column number above, first column = 0
 SNPchr = 0  # chromosome
 SNPname = 1  # name of SNP
