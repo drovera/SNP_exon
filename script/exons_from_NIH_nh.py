@@ -49,10 +49,10 @@ class Exons_from_NIH:
         count_exon = list()
         self.array_abn = 0
         self.abn_o.write('Abnormality in array of exons: \nchr\tgene\tpositions\n')
-        for _ in range(23):
+        for _ in range(24):
             count_gene.append(0)
             count_exon.append(0)
-        for chr in range(1, 24):
+        for chr in range(1, 25):
             in_exon_file = P.extract_from_NIH + '{:02}'.format(chr) + '.txt'
             genes = set()
             inf = open(in_exon_file)
@@ -85,7 +85,7 @@ class Exons_from_NIH:
         self.abn_o.write(mess)
         for gene in repeated_gene:
             self.abn_o.write(str(gene) + '\n')
-        for i in range(23):
+        for i in range(24):
             print(i + 1, count_gene[i], 'genes', count_exon[i], 'exons', sep='\t')
 
     def write_seq(self):

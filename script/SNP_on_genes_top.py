@@ -106,7 +106,7 @@ class SNP_on_gene_analyse:
 
 if __name__ == "__main__":
     sog = SNP_on_gene_analyse()
-    if P.if_top:
+    if P.top > 0:
         sog.gene_SNP_top(P.top)
     else:
         sog.gene_SNP_list()

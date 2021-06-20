@@ -9,7 +9,7 @@ import SNP_exon_param as P
 
 def read_gene():
     file = P.gene_file
-    seq_pos = [list() for i in range(23)]
+    seq_pos = [list() for i in range(24)]
     for line in open(file):
         sq = line.split()
         seq_pos[int(sq[0]) - 1].append((int(sq[1]), 1, sq[3]))
@@ -18,7 +18,7 @@ def read_gene():
 
 def read_exon():
     file = P.exon_file
-    seq_pos = [list() for i in range(23)]
+    seq_pos = [list() for i in range(24)]
     for line in open(file):
         sq = line.split()
         seq_pos[int(sq[0]) - 1].append((int(sq[1]), 1, sq[3], int(sq[4])))
@@ -28,41 +28,49 @@ def read_exon():
 
 def read_SNP(log=False):
     file = P.SNP_file
-    seq_pos = [list() for i in range(23)]
+    seq_pos = [list() for i in range(24)]
     snp_nb = 0
     SNP_pv = dict()
     in_ = open(file)
     if P.title_line:
         in_.readline()
+        record = 2
+    else:
+        record = 1
     SNP_l = in_.readline()
-    excluded, duplicated = np.zeros(23, dtype=int), np.zeros(23, dtype=int)
+    excluded, duplicated = np.zeros(24, dtype=int), np.zeros(24, dtype=int)
     ne, nd = 0, 0
     while SNP_l:
-        SNP = SNP_l.split()
-        c = int(SNP[P.SNP_chr]) - 1
-        pv = float(SNP[P.SNP_pv])
-        name = SNP[P.SNP_name]
-        if name in SNP_pv:
-            duplicated[c], nd = duplicated[c] + 1, nd + 1
-            old_name, name = name, name + 'b'
-            if log:
-                print('Duplicated SNP:', old_name, ', renamed:', name)
-        if P.inf_pv < pv < P.sup_pv:
-            SNP_pv[name] = pv
-            seq_pos[c].append((int(SNP[P.SNP_bp]), 0, name))
-            snp_nb += 1
-        else:
-            excluded[c], ne = excluded[c] + 1, ne + 1
-            if log:
-                print('Excluded SNP:', name, 'pv=', pv)
+        try:
+            SNP = SNP_l.split()
+            c = int(SNP[P.SNP_chr]) - 1
+            pv = float(SNP[P.SNP_pv])
+            name = SNP[P.SNP_name]
+            if name in SNP_pv:
+                duplicated[c], nd = duplicated[c] + 1, nd + 1
+                old_name, name = name, name + 'b'
+                if log:
+                    print('Duplicated SNP:', old_name, ', renamed:', name)
+            if P.inf_pv < pv < P.sup_pv:
+                SNP_pv[name] = pv
+                seq_pos[c].append((int(SNP[P.SNP_bp]), 0, name))
+                snp_nb += 1
+            else:
+                excluded[c], ne = excluded[c] + 1, ne + 1
+                if log:
+                    print('Excluded SNP:', name, 'pv=', pv)
+        except Exception as excpt:
+            print('Abnormality at record', record, excpt.args)
         SNP_l = in_.readline()
+        record += 1
+
     print(snp_nb, 'p_values in [', P.inf_pv, ', ', P.sup_pv, ']', 'red from', file)
     if nd > 0 or ne > 0:
         print('Warning about reading SNP:', nd, 'duplicated,', ne, 'out limits')
         print('Active log by log = True to get details')
     if log:
         print('chr\tSNP\tNumber of excluded SNP, p-value out limits', P.inf_pv, P.sup_pv)
-        for c in range(23):
+        for c in range(24):
             print(c + 1, len(seq_pos[c]), excluded[c], duplicated[c], sep='\t')
         print('sum', ne, nd, sep='\t')
     return seq_pos, SNP_pv
@@ -124,23 +132,20 @@ def cumul_number(xd):
         cy[i] = i / len(xd)
     return cx, cy
 
-def print_std(cy, ey):
-    gy = ey - cy
-    std = np.sum(np.square(gy)) / cy.size
-    print('Standard deviation errors on the data:', std)
-    return gy
-
 def gamma_draw_fit(cx, cy, funct, param, title=None):
     plt.figure()
     if title:
         plt.title(title)
     ey = funct(cx, *param)
-    gy = print_std(cy, ey)
+    gy = ey - cy
+    std = np.sum(np.square(gy)) / cy.size
+    print('Standard deviation errors on the data:', std)
     plt.xscale('log')
     plt.plot(cx, cy, label='data')
     plt.plot(cx, ey, label='fit')
     plt.plot(cx, gy, label='gap')
     plt.legend()
+    return std
 
 def gamma_cdf(x, shape, scale):
     return stats.gamma.cdf(x, shape, scale=scale)

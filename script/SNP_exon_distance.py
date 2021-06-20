@@ -26,18 +26,18 @@ class SNP_exon_distance:
     def create_seq(self):
         self.seq_pos = U.read_exon()
         self.SNP_pos, _ = U.read_SNP()
-        for c in range(23):
+        for c in range(24):
             self.seq_pos[c].extend(self.SNP_pos[c])
-        [self.seq_pos[i].sort() for i in range(23)]
+        [self.seq_pos[i].sort() for i in range(24)]
         self.SNP_io = self.SNP_in_gene()
 
     def SNP_in_gene(self):
         seq_pos = U.read_gene()
-        SNP_io = [dict() for i in range(23)]
-        for c in range(23):
+        SNP_io = [dict() for i in range(24)]
+        for c in range(24):
             seq_pos[c].extend(self.SNP_pos[c])
-        [seq_pos[i].sort() for i in range(23)]
-        for c in range(23):
+        [seq_pos[i].sort() for i in range(24)]
+        for c in range(24):
             in_gene = set()
             for sq in seq_pos[c]:
                 if sq[1] == 1:
@@ -128,17 +128,18 @@ class SNP_exon_distance:
 
     def proceed(self):
         self.o_sed = open(P.sed_file, mode='w')
-        self.count = np.zeros((23, len(P.cases)), dtype=int)
+        self.count = np.zeros((24, len(P.cases)), dtype=int)
         self.create_seq()
-        for self.c in range(23):
-            self.proceed_chr(self.direct_reverse(self.seq_pos[self.c]), self.SNP_io[self.c])
+        for self.c in range(24):
+            if self.SNP_pos[self.c]:
+                self.proceed_chr(self.direct_reverse(self.seq_pos[self.c]), self.SNP_io[self.c])
         self.o_sed.close()
         print('distance between SNP and exons written in', P.sed_file)
         self.print_count()
 
     def print_count(self):
         print('chr\tSNP\toutside gene\tin one gene\tin more one')
-        for c in range(23):
+        for c in range(24):
             n0, n1, n2 = 0, 0, 0
             for snp in self.SNP_io[c]:
                 if len(self.SNP_io[c][snp]) == 0:
@@ -151,7 +152,7 @@ class SNP_exon_distance:
         for case in range(len(P.cases)):
             print(case, ':', P.cases[case])
         print('chr\tcase0\tcase1\tcase2\tcase3\tcase4\tcase5\tcase6')
-        for c in range(23):
+        for c in range(24):
             print(c + 1, end='')
             for case in range(len(P.cases)):
                 print('\t', self.count[c][case], sep='', end='')

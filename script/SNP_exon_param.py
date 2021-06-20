@@ -17,7 +17,8 @@ SNP_file = root + 'dta/icogs_bcac_public_results_euro.genesis.assoc.txt'
 title_line = True
 # chromosome, name of SNP, base position, p-value
 SNP_chr, SNP_name, SNP_bp, SNP_pv = 0, 1, 2, 8
-# limit of p-value to eliminate outlier p-values in SNP_analyse:
+# limit of p-value to eliminate outlier p-values from SNP_analyse.py:
+# veleurs de départ: inf_pv, sup_pv = 0.0, 1.0
 inf_pv, sup_pv = 1.3805e-15, 0.99
 # Correlation coefficient between SNP p-value
 SNP_R = 0.8478
@@ -25,14 +26,15 @@ SNP_R = 0.8478
 # Name of analysed data
 data = 'BCAC'
 
-# Parameters of gamma law min distance SNP - exons computed on SNP inside genes
-shape, scale = 4.54746696e-01, 2.97027070e+04
+# Parameters of gamma law min distance SNP - exons computed on SNPs inside genes
+# From SNP_exon_analyse.py
+shape = 0.4547466956970647
+scale = 29702.70695904141
 
 # Choice of option for result
-if_top = True
-# Top number to display result
+# Top number to display result, 0 if computing from a list of genes
 top = 10
-# If not top, gene list file in input, use for detailed contribution of SNP
+# if top equals to 0, gene list file in input, use for detailed contribution of SNP
 gene_list = 'VEGA50'
 gene_list_file = root + 'result/GL_' + gene_list + '.txt'
 
@@ -115,8 +117,5 @@ chr_size = [
 64444167,
 46709983,
 50818468,
-156040895]
-
-
-
-
+156040895,
+57227415]

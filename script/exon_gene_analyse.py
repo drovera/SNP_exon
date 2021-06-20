@@ -16,8 +16,8 @@ import SNP_exon_param as P
 class Exon_gene_analyse:
 
     def overlap_item(self, seq_pos):
-        groups = [list() for i in range(23)]
-        for c in range(23):
+        groups = [list() for i in range(24)]
+        for c in range(24):
             group = set()
             seq_pos[c].sort()
             bp0, bp1 = 0, 0
@@ -34,8 +34,8 @@ class Exon_gene_analyse:
 
     def list_items(self, groups, type):
         print('Overlapping', type)
-        counts = [dict() for i in range(23)]
-        for c in range(23):
+        counts = [dict() for i in range(24)]
+        for c in range(24):
             for g in groups[c]:
                 length = len(g[2])
                 if length in counts[c]:
@@ -45,7 +45,7 @@ class Exon_gene_analyse:
                 if len(g[2]) > 1:
                     print(c + 1, g[2])
         print('chr\toverlapping_size\t' + type + '_number')
-        for c in range(23):
+        for c in range(24):
             for l in counts[c]:
                 print(c + 1, l, counts[c][l], sep='\t')
 
@@ -53,20 +53,20 @@ class Exon_gene_analyse:
         groups = self.overlap_item(U.read_gene())
         self.list_items(groups, 'genes')
         exon_pos = U.read_exon()
-        seq_pos = [list() for i in range(23)]
-        for c in range(23):
+        seq_pos = [list() for i in range(24)]
+        for c in range(24):
             for ep in exon_pos[c]:
                 seq_pos[c].append((ep[0], ep[1], ep[2] + '-' + str(ep[3])))
         groups = self.overlap_item(seq_pos)
         self.list_items(groups, 'exons')
 
     def exon_gap_between(self):
-        exon_pos = [list() for i in range(23)]
+        exon_pos = [list() for i in range(24)]
         for ln in open(P.exon_file):
             sln = ln.split()
             exon_pos[int(sln[0]) - 1].append((float(sln[1]) + float(sln[2])) / 2)
         distances = list()
-        for c in range(23):
+        for c in range(24):
             exon_pos[c].sort()
             it = iter(exon_pos[c])
             while True:
