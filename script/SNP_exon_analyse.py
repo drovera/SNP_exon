@@ -8,6 +8,9 @@ from scipy import stats
 import matplotlib.pyplot as plt
 import SNP_exon_utils as U
 import SNP_exon_param as P
+import numpy as np
+import scipy.special as sp
+import scipy.optimize as so
 
 
 class SNP_exon_analyse:
@@ -47,6 +50,17 @@ class SNP_exon_analyse:
         min_dist_out.sort()
         return min_dist_all, min_dist_btw, min_dist_out
 
+    def ln_digma(self, x, ln_psi):
+        return np.log(x) - sp.digamma(x) - ln_psi
+
+    def shape_scale(self, dist, x0):
+        mean = np.mean(dist)
+        ln_psi = np.log(mean) - np.mean(np.log(dist))
+        shape = so.newton(self.ln_digma, x0, args=[ln_psi])
+        scale = np.mean(dist) / shape
+        print('shape =', shape)
+        print('scale = ', scale)
+
     def fit_draw(self):
         min_dist_all, min_dist_btw, min_dist_out = self.read_distance()
         print()
@@ -66,6 +80,10 @@ class SNP_exon_analyse:
         std = U.gamma_draw_fit(cxa, cya, U.gamma_cdf, param, title=title)
         print('shape\tscale\tstd')
         print(param[0], param[1], std, sep='\t')
+        ''' Used in presentation
+        bin_nb = 1000
+        U.plot_histo(cxb, bin_nb, P.data + ' minimal distance from SNPs to exons', max_x=200000, noyticks=True)       
+        '''
         print('\nFitting for SNPs inside genes')
         param = U.curve_fit(cxb, cyb, U.gamma_cdf)
         title = P.data + ' min distance from SNPs inside genes to exons / normalized cumulative number\n'
@@ -75,15 +93,17 @@ class SNP_exon_analyse:
         print(param[0], param[1], std, sep='\t')
         bin_nb = 1000
         U.plot_histo(cxb, bin_nb, P.data + ' minimal distance from SNPs inside gene to exons', noyticks=True)
-        ax = plt.figure().add_subplot()
+        ax = plt.figure(figsize=(7.0, 7.0)).add_subplot()
         stats.probplot(cxb, dist=stats.gamma, sparams=param, plot=ax)
         ax.set_title(P.data + ' minimal distance from SNPs inside gene to exons\ngamma with parameters ' + str(param))
         ax.get_lines()[0].set_markersize(3.0)
         print()
-        print('Result as parameters of gamma distribution, to copy in parameters:')
+        print('Result as parameters of gamma distribution, to adjust and copy in parameters:')
+        print('By fitting cumulative distribution')
         print("shape =", param[0])
         print("scale =", param[1])
-
+        print('By likelihood')
+        self.shape_scale(min_dist_btw, 0.4)
 
 if __name__ == "__main__":
     SNP_exon_analyse().fit_draw()

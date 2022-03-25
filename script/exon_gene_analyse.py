@@ -1,5 +1,6 @@
 # daniel.rovera@gmail.com Institut Curie - Mines Paris Tech
 # complement: Analyse position of genes and exons: overlapping
+# gap between not overlapping exons
 
 # Fields of sequence position (seq_pos)
 # chromosome in first index of list
@@ -8,6 +9,7 @@
 # 2: name of gene
 # 3: index of exon list if exon
 
+import numpy as np
 import matplotlib.pyplot as plt
 import SNP_exon_utils as U
 import SNP_exon_param as P
@@ -61,27 +63,26 @@ class Exon_gene_analyse:
         self.list_items(groups, 'exons')
 
     def exon_gap_between(self):
-        exon_pos = [list() for i in range(24)]
-        for ln in open(P.exon_file):
-            sln = ln.split()
-            exon_pos[int(sln[0]) - 1].append((float(sln[1]) + float(sln[2])) / 2)
+        exon_pos = U.read_exon()
         distances = list()
         for c in range(24):
-            exon_pos[c].sort()
             it = iter(exon_pos[c])
+            next(it)
             while True:
                 try:
-                    d1, d2 = next(it), next(it)
-                    distances.append(d2 - d1)
+                    d = -(next(it)[0] - next(it)[0])
+                    if d > 0:
+                        distances.append(d)
                 except StopIteration:
                     break
         distances.sort()
         egx, egy = U.cumul_number(distances)
-        plt.title('Gap between exons en x log scale, normalized cumulative number en y')
+        title = 'Positive gap between exons en x log scale (excluding overlap), normalized cumulative number en y'
+        plt.title(title)
         plt.xscale('log')
         plt.plot(egx, egy)
-        threshold = 100000
-        U.plot_histo(distances, 1000, title='gap between exons, max dist=' + str(threshold), max_x=threshold)
+        threshold = 150000
+        U.plot_histo(distances, 1000, title='Positive gap between exons, max dist=' + str(threshold), max_x=threshold)
         plt.show()
 
 

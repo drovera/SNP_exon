@@ -1,54 +1,104 @@
 # daniel.rovera@gmail.com Institut Curie - Mines Paris Tech
-# common parameters: dir, files, values ...
+# common parameters: dir, files, sources, intermediate, results ...
 
-### Parameters ###
+#########################################
 
-# Common part of all directories to update
+# Structure of directories to update #
 root = 'C:/Users/danie/Documents/SNP_exon/'
 ref_dir = root + 'ref/'
+dta_dir = root + 'dta/'
+result_dir = root + 'result/'
 
-# Extract by chromosome from NIH
-# refSeq from NIH genome - https://www.ncbi.nlm.nih.gov/genome/?term=homo+sapiens+%5Borgn%5D
-extract_from_NIH = root + 'ref/NIHsequence/sequence_chr'
+#################################################################
 
-# Source of biological data about SNP
-SNP_file = root + 'dta/icogs_bcac_public_results_euro.genesis.assoc.txt'
+# GWAS sources and their features, choice the source by GWAS_src #
+
+# Name of analysed data: data
 # Positions of used fields, File with header, first column = 0
-title_line = True
-# chromosome, name of SNP, base position, p-value
-SNP_chr, SNP_name, SNP_bp, SNP_pv = 0, 1, 2, 8
-# limit of p-value to eliminate outlier p-values from SNP_analyse.py:
-# veleurs de départ: inf_pv, sup_pv = 0.0, 1.0
-inf_pv, sup_pv = 1.3805e-15, 0.99
-# Correlation coefficient between SNP p-value
-SNP_R = 0.8478
+# chromosome: SNP_chr, name of SNP: SNP_name , base position: SNP_bp, p-value: SNP_pv
+# inf_pv, sup_pv are limits of p-value to eliminate eventually outlier p-values
+# start values are inf_pv, sup_pv = 0.0, 1.0
+# Correlation coefficient between SNP p-value: SNP_R
+### update inf_pv, sup_pv and SNP_R by SNP_analyse ###
+# Parameters shape and scale, gamma law min distance SNP - exons computed on SNPs inside genes
+### update shape and scale by SNP_exon_analyse.py ###
+datas = ['ebi_006719',      # 0
+         # http://ftp.ebi.ac.uk/pub/databases/gwas/summary_statistics/GCST006001-GCST007000/GCST006719
+        ]
+data_src = 0
+if data_src == 0:
+    data = datas[data_src]
+    SNP_file = dta_dir + 'ebi_006719_download.txt'
+    title_line = True
+    SNP_chr, SNP_name, SNP_bp, SNP_pv = 0, 1, 2, 6
+    inf_pv, sup_pv = 0, 1
+    SNP_R = 0.9994
+    shape = 0.4538
+    scale = 34094.3
+else:
+    data = 'unknown'
 
-# Name of analysed data
-data = 'BCAC'
+##############################################################################
 
-# Parameters of gamma law min distance SNP - exons computed on SNPs inside genes
-# From SNP_exon_analyse.py
-shape = 0.4547466956970647
-scale = 29702.70695904141
+# Choice of option for result and result files #
 
-# Choice of option for result
-# Top number to display result, 0 if computing from a list of genes
-top = 10
+# SNP_on_genes_top.py : Top number to display result, 0 if computing from a list of genes
+top = 0
 # if top equals to 0, gene list file in input, use for detailed contribution of SNP
 gene_list = 'VEGA50'
-gene_list_file = root + 'result/GL_' + gene_list + '.txt'
+gene_list_file = result_dir + 'GL_' + gene_list + '.txt'
 
-### Other parameters and information ###
+# Result for gene as table
+geneZ_file = result_dir + data + '_Zgn.txt'
+# Chr: chromosome  # 0
+# Gene: gene, can be twice if internal and splicing effect   # 1
+# BPbeg: begin of gene as base position  # 2
+# BPend: end of gene as base position  # 3
+# Z: computed Z-score of gene  # 4
+# PV: p-value computed from Z-score   # 5
+# InOut: 0 if internal effect, 1 if splicing effect  # 6
 
-# Final result for gene as table
-geneZ_file = root + 'result/' + data + '_Zgn.txt'
-# Chr: chromosome
-# Gene: gene, can be twice if internal and splicing effect
-# BPbeg: begin of gene as base position
-# BPend: end of gene as base position
-# Z: computed Z-score of gene
-# PV: p-value computed from Z-score
-# InOut: 0 if internal effect, 1 if splicing effect
+# SNP_Z_on_gene.py: the SNP Z threshold, choice by SNP_exon_dist_Z
+Z_SNP_thr = 4.0
+
+######################################################
+
+# Intermediate files
+
+# Intermediate file for computing Z score
+# 0: SNP_name
+# 1: SNP p-value
+# 2: SNP Z score
+pvZ_file = dta_dir + data +'_pvZ.txt'
+
+# Intermediate result for distance between SNP and exons, SNP exon distance
+sed_file = dta_dir + data + '_sed.txt'
+# Every SNP is twice, even the records are identical
+# fields for twice SNP
+# 0: chromosome
+# 1: relative position case
+# 2: SNP
+# 3: gene
+# 4: exon order
+# 5: distance SNP to exon
+
+# Labels of relative position cases
+cases = ['SNP inside exon',  # 0
+         'SNP inside the same gene',  # 1
+         'SNP inside the the 2 nearest genes',  # 2
+         'SNP inside this gene but outside the other nearest gene',  # 3
+         'SNP outside this gene but inside the other nearest gene',  # 4
+         'SNP between exons and outside the 2 nearest genes ',  # 5
+         'SNP at the extremities and outside all genes']  # 6
+
+########################################################################################
+
+# Position of exons and genes from NIH #
+
+# Extraction by chromosome from NIH: parameter and output
+### launch in first exons_from_NIH_nh after extracting sequence files ###
+# refSeq from NIH genome - https://www.ncbi.nlm.nih.gov/genome/?term=homo+sapiens+%5Borgn%5D
+extract_from_NIH = ref_dir + 'NIHsequence/sequence_chr'
 
 # Description of exon_pos.txt
 # 0: chromosome
@@ -69,31 +119,7 @@ gene_file = ref_dir + 'gene_pos.txt'
 # Abnormality of extraction are listed in
 NIH_abn = ref_dir + 'exon_abn.txt'
 
-# Intermediate file for computing Z score
-# 0: SNP_name
-# 1: SNP Z score
-pvZ_file = root + 'dta/' + data +'_pvZ.txt'
-
-# Intermediate result for distance between SNP and exons, SNP exon distance
-sed_file = root + 'dta/' + data + '_sed.txt'
-# Every SNP is twice, even the records are identical
-# fields for twice SNP
-# 0: chromosome
-# 1: relative position case
-# 2: SNP
-# 3: gene
-# 4: exon order
-# 5: distance SNP to exon
-
-cases = ['SNP inside exon',
-         'SNP inside the same gene',
-         'SNP inside the the 2 nearest genes',
-         'SNP inside this gene but outside the other nearest gene',
-         'SNP outside this gene but inside the other nearest gene',
-         'SNP between exons and outside the 2 nearest genes ',
-         'SNP at the extremities and outside all genes']
-
-# Chromosome size from NIH
+# Chromosome size
 chr_size = [
 248956422,
 242193529,

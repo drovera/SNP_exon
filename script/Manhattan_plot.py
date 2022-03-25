@@ -10,8 +10,8 @@ import matplotlib.pyplot as plt
 class Manhattan_plot:
 
     def __init__(self):
-        self.org = np.zeros(23)
-        self.pos = np.zeros(23)
+        self.org = np.zeros(24)
+        self.pos = np.zeros(24)
         self.chr = list()
         self.lim = P.chr_size[0]
         for c in range(22):
@@ -43,16 +43,16 @@ class Manhattan_plot:
         col1 = ['green', 'blue', 'indigo']
         fig, axs = plt.subplots(2, 1)
         self.plot_df(axs[0], df[df['Int_Spl'] == 0], col0)
-        self.axes(axs[0], 'P-value of genes resulting from effect of BCAC\nSNP inside exons')
+        self.axes(axs[0], 'P-value of genes resulting from effect of ' + P.data + '\nSNP inside exons')
         self.plot_df(axs[1], df[df['Int_Spl'] == 1], col1)
         self.axes(axs[1], 'SNP inside genes and outside exons')
 
-    def threshold(self):
+    def threshold(self, ax):
         sig_thresh1 = 0.05
         sig_thresh2 = 0.01
         print("Significance threshold = ", sig_thresh1, "and", sig_thresh2)
-        plt.plot([0, self.lim], [-np.log10(sig_thresh1), -np.log10(sig_thresh1)], lw=1, color='black')
-        plt.plot([0, self.lim], [-np.log10(sig_thresh2), -np.log10(sig_thresh2)], lw=1, color='black')
+        ax.plot([0, self.lim], [-np.log10(sig_thresh1), -np.log10(sig_thresh1)], lw=1, color='black')
+        ax.plot([0, self.lim], [-np.log10(sig_thresh2), -np.log10(sig_thresh2)], lw=1, color='black')
 
 
 if __name__ == "__main__":

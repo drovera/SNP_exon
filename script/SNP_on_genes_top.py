@@ -7,8 +7,6 @@
 # SNP_gene_Z dict of dict, SNP_gene_Z[snp][gene]=z
 # gene_Z: list(z, gene)
 
-import sys
-from scipy import stats
 import SNP_exon_param as P
 import SNP_on_genes_utils as SG
 
@@ -19,19 +17,22 @@ class SNP_on_gene_analyse:
         self.sg = SG.SNP_on_gene_utils()
 
     def gene_SNP_top(self, top):
-        gene_Z_in, SNP_gene_Z_in = self.sg.gene_Z(self.sg.gene_SNP_in_w,  self.sg.denom_in(self.sg.gene_SNP_in_w))
-        gene_Z_out, SNP_gene_Z_out = self.sg.gene_Z(self.sg.gene_SNP_out_w, self.sg.denom_out(self.sg.gene_SNP_out_w))
+        SNP_Z = self.sg.read_SNP_Z()
+        gene_SNP_in_w = self.sg.read_dist_in(SNP_Z)
+        gene_Z_in, SNP_gene_Z_in = self.sg.gene_Z(SNP_Z, gene_SNP_in_w,  self.sg.denom_in(gene_SNP_in_w))
+        gene_SNP_out_w = self.sg.read_dist_out(SNP_Z)
+        gene_Z_out, SNP_gene_Z_out = self.sg.gene_Z(SNP_Z, gene_SNP_out_w, self.sg.denom_out(gene_SNP_out_w))
         result_file = P.root + 'result/' + P.data + '_T' + str(top) + '.txt'
         out = open(result_file, mode='w')
-        out.write(str(top) + 'top genes by internal effect\n')
+        out.write(str(top) + ' top genes sorted by internal effect\n')
         top_gene = [gene_Z_in[i][1] for i in range(top)]
         top_gene_Z = [gene_Z_in[i][0] for i in range(top)]
-        self.write_detail_array(out, top_gene, top_gene_Z, SNP_gene_Z_in)
-        out.write(str(top) + 'top genes by splicing effect\n')
+        self.write_detail_array(out, SNP_Z, top_gene, top_gene_Z, SNP_gene_Z_in)
+        out.write(str(top) + ' top genes sorted by splicing effect\n')
         top_gene = [gene_Z_out[i][1] for i in range(top)]
         top_gene_Z = [gene_Z_out[i][0] for i in range(top)]
-        self.write_detail_array(out, top_gene, top_gene_Z, SNP_gene_Z_out)
-        out.write(str(top) + 'top genes by added Z-scores, internal effect in first and splicing effect in second\n')
+        self.write_detail_array(out, SNP_Z, top_gene, top_gene_Z, SNP_gene_Z_out)
+        out.write(str(top) + ' top genes sorted by added Z-scores, internal effect in first and splicing effect in second\n')
         gene_Z_in_d = self.sg.tuple_list_to_dict(gene_Z_in)
         gene_Z_out_d = self.sg.tuple_list_to_dict(gene_Z_out)
         gene_Z_io = list()
@@ -43,16 +44,19 @@ class SNP_on_gene_analyse:
         top_gene = [gene_Z_io[i][1] for i in range(top)]
         out.write('1- only internal effect\n')
         top_gene_Z = [gene_Z_in_d[gene] for gene in top_gene]
-        self.write_detail_array(out, top_gene, top_gene_Z, SNP_gene_Z_in)
+        self.write_detail_array(out, SNP_Z, top_gene, top_gene_Z, SNP_gene_Z_in)
         out.write('2- only splicing effect\n')
         top_gene_Z = [gene_Z_out_d[gene] for gene in top_gene]
-        self.write_detail_array(out, top_gene, top_gene_Z, SNP_gene_Z_out)
+        self.write_detail_array(out, SNP_Z, top_gene, top_gene_Z, SNP_gene_Z_out)
         out.close()
         print('Result of top', str(top), 'in', result_file)
 
     def gene_SNP_list(self):
-        gene_Z_in, SNP_gene_Z_in = self.sg.gene_Z(self.sg.gene_SNP_in_w,  self.sg.denom_in(self.sg.gene_SNP_in_w))
-        gene_Z_out, SNP_gene_Z_out = self.sg.gene_Z(self.sg.gene_SNP_out_w, self.sg.denom_out(self.sg.gene_SNP_out_w))
+        SNP_Z = self.sg.read_SNP_Z()
+        gene_SNP_in_w = self.sg.read_dist_in(SNP_Z)
+        gene_Z_in, SNP_gene_Z_in = self.sg.gene_Z(SNP_Z, gene_SNP_in_w,  self.sg.denom_in(gene_SNP_in_w))
+        gene_SNP_out_w = self.sg.read_dist_out(SNP_Z)
+        gene_Z_out, SNP_gene_Z_out = self.sg.gene_Z(SNP_Z, gene_SNP_out_w, self.sg.denom_out(gene_SNP_out_w))
         gene_Z_in = self.sg.tuple_list_to_dict(gene_Z_in)
         gene_Z_out = self.sg.tuple_list_to_dict(gene_Z_out)
         gene_list_in, gene_list_Z_in = list(), list()
@@ -73,20 +77,20 @@ class SNP_on_gene_analyse:
                     gene_list_out.append(gene)
                     gene_list_Z_out.append(gene_Z_out[gene])
         out.write('1- only internal effect\n')
-        self.write_detail_array(out, gene_list_in , gene_list_Z_in, SNP_gene_Z_in)
+        self.write_detail_array(out, SNP_Z, gene_list_in, gene_list_Z_in, SNP_gene_Z_in)
         out.write('2- only splicing effect\n')
-        self.write_detail_array(out, gene_list_out, gene_list_Z_out, SNP_gene_Z_out)
+        self.write_detail_array(out, SNP_Z, gene_list_out, gene_list_Z_out, SNP_gene_Z_out)
         out.close()
         print('Result of', P.gene_list, 'in', result_file)
 
-    def write_detail_array(self, out, gene_list, top_gene_Z, SNP_gene_Z):
+    def write_detail_array(self, out, SNP_Z, gene_list, top_gene_Z, SNP_gene_Z):
         top_SNP = set()
         for snp in SNP_gene_Z:
             for gene in SNP_gene_Z[snp]:
                 if gene in gene_list:
                     top_SNP.add(snp)
         top_SNP = list(top_SNP)
-        top_SNP.sort(key=lambda x: self.sg.SNP_Z[x], reverse=True)
+        top_SNP.sort(key=lambda x: SNP_Z[x], reverse=True)
         form1 = '{:.4f}'
         out.write('R=' + str(P.SNP_R))
         for gene in gene_list:
@@ -102,7 +106,7 @@ class SNP_on_gene_analyse:
                     out.write('\t' + form1.format(SNP_gene_Z[snp][gene]))
                 else:
                     out.write('\t0')
-            out.write('\t' + form1.format(self.sg.SNP_Z[snp]) + '\n')
+            out.write('\t' + form1.format(SNP_Z[snp]) + '\n')
 
 if __name__ == "__main__":
     sog = SNP_on_gene_analyse()

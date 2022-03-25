@@ -36,7 +36,7 @@ class SNP_distance:
         dist = self.read_distance()
         cx, cy = U.cumul_number(dist)
         param = U.curve_fit(cx, cy, U.gamma_cdf)
-        U.gamma_draw_fit(cx, cy, U.gamma_cdf, param, title='Fit distance between SNP')
+        U.gamma_draw_fit(cx, cy, U.gamma_cdf, param, title='Fit distance between SNP, ' + P.datas[P.data_src])
 
 if __name__ == "__main__":
     SNP_distance().fit_distance()

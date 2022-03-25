@@ -11,24 +11,18 @@ import SNP_exon_utils as U
 
 class SNP_analyse:
 
-    def read_all_pv(self):
-        SNP_pv = list()
-        in_ = open(P.SNP_file)
-        in_.readline()
-        ln = in_.readline()
-        while ln:
-            sln = ln.split()
-            SNP_pv.append(float(sln[P.SNP_pv]))
-            ln = in_.readline()
-        SNP_pv.sort()
-        return SNP_pv
+
+    def __init__(self):
+        _, SNP_pv_dict = U.read_SNP(log=log)
+        self.SNP_pv = list(SNP_pv_dict.values())
 
     def outliers(self):
-        SNP_pv = self.read_all_pv()
+        SNP_pv = self.SNP_pv
         print('Step 1- Choice of fork of p-values to eliminate outlier p-values')
+        print('Quantiles are computed for p-values in', '[', P.inf_pv, ', ', P.sup_pv, ']')
         print('Once choosen, update the parameter to compute correlation coefficient at step 2')
         print('Warning: Python cannot compute the Z-score for p-value < 5.552e-17')
-        quant = [0.001, 0.005, 0.01, 0.05, 0.1, 0.15, 0.2, 0.8, 0.85, 0.9, 0.95, 0.99, 0.995, 0.999]
+        quant = [0.0001, 0.0005, 0.001, 0.005, 0.01, 0.05, 0.1, 0.15, 0.2, 0.8, 0.85, 0.9, 0.95, 0.99, 0.995, 0.999]
         print('quantile\tvalue')
         for q in quant:
             print(q, np.quantile(SNP_pv, q), sep='\t')
@@ -37,10 +31,8 @@ class SNP_analyse:
     def fit_lin_log(self, inf_pv, sup_pv):
         print('\nStep 2- Compute correlation coefficient between log of SNP p-values')
         print('Fixed limits of p-values', P.inf_pv, P.sup_pv)
-        _, SNP_pv_dict = U.read_SNP(log=log)
-        SNP_pv = list(SNP_pv_dict.values())
-        SNP_pv.sort()
-        cx, cy = U.cumul_number(SNP_pv)
+        self.SNP_pv.sort()
+        cx, cy = U.cumul_number(self.SNP_pv)
         cx, cy = cx[1:], cy[1:]
         i_min = np.where(cx > inf_pv)[0][0]
         i_max = np.where(cx < sup_pv)[0][-1]
@@ -48,11 +40,13 @@ class SNP_analyse:
         ly = np.log10(cy[i_min:i_max])
         plt.figure()
         plt.title(P.data + ' linear adjustment of log p-value and log cumulative number')
+        plt.xticks(ticks=[], labels=[])
+        plt.yticks(ticks=[], labels=[])
         plt.plot(lx, ly)
         slope, intercept, r_value, p_value, std_err = stats.linregress(lx, ly)
         plt.plot(lx, lx * slope + intercept, label='R=' + '{:.4f}'.format(r_value))
         plt.legend()
-        print('number of p-values', len(lx), 'out of a total of', len(SNP_pv))
+        print('number of p-values', len(lx), 'out of a total of', len(self.SNP_pv))
         print('Real limits of p_values: [', cx[i_min], ', ', cx[i_max], ']', sep='')
         print('r_value:', r_value)
         print('p_value:', p_value)

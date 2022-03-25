@@ -63,11 +63,11 @@ def read_SNP(log=False):
             print('Abnormality at record', record, excpt.args)
         SNP_l = in_.readline()
         record += 1
-
-    print(snp_nb, 'p_values in [', P.inf_pv, ', ', P.sup_pv, ']', 'red from', file)
+    print(snp_nb, 'p_values in [', P.inf_pv, ', ', P.sup_pv, ']')
+    print('red from', record, 'lines from', file)
     if nd > 0 or ne > 0:
         print('Warning about reading SNP:', nd, 'duplicated,', ne, 'out limits')
-        print('Active log by log = True to get details')
+        print('To get details set log = True ')
     if log:
         print('chr\tSNP\tNumber of excluded SNP, p-value out limits', P.inf_pv, P.sup_pv)
         for c in range(24):
@@ -133,7 +133,7 @@ def cumul_number(xd):
     return cx, cy
 
 def gamma_draw_fit(cx, cy, funct, param, title=None):
-    plt.figure()
+    plt.figure(figsize=(7.0, 7.0))
     if title:
         plt.title(title)
     ey = funct(cx, *param)

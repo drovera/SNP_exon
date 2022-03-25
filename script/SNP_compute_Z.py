@@ -6,8 +6,10 @@ from scipy import stats
 import SNP_exon_param as P
 import SNP_exon_utils as U
 
-if __name__ == "__main__":
-    _, SNP_pv = U.read_SNP()
+def SNP_compute_Z():
+    # log = True to get details of excluded p-values
+    log = False
+    _, SNP_pv = U.read_SNP(log)
     out = open(P.pvZ_file, mode='w')
     print('Infinity result of computing Z score')
     inf_pos, inf_neg = 0, 0
@@ -23,3 +25,6 @@ if __name__ == "__main__":
             out.write(snp + '\t' + str(SNP_pv[snp]) + '\t' + str(z) + '\n')
     print('Z computed from p-values of SNP:', inf_pos, '+inf, ', inf_neg, '-inf /', len(SNP_pv))
     out.close()
+
+if __name__ == "__main__":
+    SNP_compute_Z()

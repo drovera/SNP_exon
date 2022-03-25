@@ -1,13 +1,19 @@
 # daniel.rovera@gmail.com Institut Curie - Mines Paris Tech
 # Compute Z-scores of genes from Z-scores of SNP and weights
 
-# SNP_Z: dict of SNP giving Z
 
-# Gene_SNP_in or Gene_SNP_out, list of list
+
+# Gene_SNP_in or Gene_SNP_out or Gene_SNP_w for in or out: dict of list
 # 0: gene
-# 1: list of
+# 1: list of tuple
 #   1.0: SNP
 #   1.1: weight
+
+# gene_Z: list of tuple (Z, gene)
+
+# SNP_Z: dict of SNP giving Z
+
+# gene_SNP_d: dict of denominators for every gene
 
 import math
 import copy as c
@@ -16,21 +22,15 @@ import SNP_exon_utils as U
 
 class SNP_on_gene_utils:
 
-    def __init__(self):
-        self.SNP_Z = dict()
-        self.gene_SNP_in_w = dict()
-        self.gene_SNP_out_w = dict()
-        self.read_SNP_Z()
-        self.read_dist_in()
-        self.read_dist_out()
-
-
     def read_SNP_Z(self):
+        SNP_Z = dict()
         for ln in open(P.pvZ_file):
             sln = ln.split()
-            self.SNP_Z[sln[0]] = float(sln[2])
+            SNP_Z[sln[0]] = float(sln[2])
+        return SNP_Z
 
-    def read_dist_in(self):
+    def read_dist_in(self, SNP_Z):
+        gene_SNP_in_w = dict()
         file = P.sed_file
         in_ = open(file)
         while True:
@@ -39,14 +39,16 @@ class SNP_on_gene_utils:
                 break
             sln1 = ln.split()
             in_.readline()
-            if sln1[2] in self.SNP_Z:
+            if sln1[2] in SNP_Z:
                 if int(sln1[1]) == 0:
-                    if sln1[3] not in self.gene_SNP_in_w:
-                        self.gene_SNP_in_w[sln1[3]] = list()
-                    self.gene_SNP_in_w[sln1[3]].append((sln1[2], 1.0))
+                    if sln1[3] not in gene_SNP_in_w:
+                        gene_SNP_in_w[sln1[3]] = list()
+                    gene_SNP_in_w[sln1[3]].append((sln1[2], 1.0))
         print('Distances SNP to exons, SNP inside exons, from', file)
+        return gene_SNP_in_w
 
-    def read_dist_out(self):
+    def read_dist_out(self, SNP_Z):
+        gene_SNP_out_w = dict()
         file = P.sed_file
         in_ = open(file)
         while True:
@@ -57,25 +59,26 @@ class SNP_on_gene_utils:
             ln = in_.readline()
             sln2 = ln.split()
             if int(sln1[1]) in {1, 2}:
-                if sln1[3] not in self.gene_SNP_out_w:
-                    self.gene_SNP_out_w[sln1[3]] = list()
-                if sln2[3] not in self.gene_SNP_out_w:
-                    self.gene_SNP_out_w[sln2[3]] = list()
-                if sln1[2] in self.SNP_Z:
-                    self.gene_SNP_out_w[sln1[3]].append((sln1[2], U.weight_f(int(sln1[5]))))
-                if sln2[2] in self.SNP_Z:
-                    self.gene_SNP_out_w[sln2[3]].append((sln2[2], U.weight_f(int(sln2[5]))))
+                if sln1[3] not in gene_SNP_out_w:
+                    gene_SNP_out_w[sln1[3]] = list()
+                if sln2[3] not in gene_SNP_out_w:
+                    gene_SNP_out_w[sln2[3]] = list()
+                if sln1[2] in SNP_Z:
+                    gene_SNP_out_w[sln1[3]].append((sln1[2], U.weight_f(int(sln1[5]))))
+                if sln2[2] in SNP_Z:
+                    gene_SNP_out_w[sln2[3]].append((sln2[2], U.weight_f(int(sln2[5]))))
             if int(sln1[1]) == 3:
-                if sln1[3] not in self.gene_SNP_out_w:
-                    self.gene_SNP_out_w[sln1[3]] = list()
-                if sln1[2] in self.SNP_Z:
-                    self.gene_SNP_out_w[sln1[3]].append((sln1[2], U.weight_f(int(sln1[5]))))
+                if sln1[3] not in gene_SNP_out_w:
+                    gene_SNP_out_w[sln1[3]] = list()
+                if sln1[2] in SNP_Z:
+                    gene_SNP_out_w[sln1[3]].append((sln1[2], U.weight_f(int(sln1[5]))))
             if int(sln2[1]) == 3:
-                if sln2[3] not in self.gene_SNP_out_w:
-                    self.gene_SNP_out_w[sln2[3]] = list()
-                if sln2[2] in self.SNP_Z:
-                    self.gene_SNP_out_w[sln2[3]].append((sln2[2], U.weight_f(int(sln2[5]))))
+                if sln2[3] not in gene_SNP_out_w:
+                    gene_SNP_out_w[sln2[3]] = list()
+                if sln2[2] in SNP_Z:
+                    gene_SNP_out_w[sln2[3]].append((sln2[2], U.weight_f(int(sln2[5]))))
         print('Distances SNP to exons, SNP outside exons and inside genes, from', file)
+        return gene_SNP_out_w
 
     def denom_in(self, gene_SNP_w):
         gene_SNP_d = dict()
@@ -105,10 +108,10 @@ class SNP_on_gene_utils:
             gene_SNP_d[gene] = math.sqrt(denom)
         return gene_SNP_d
 
-    def gene_Z(self, gene_SNP_w, gene_SNP_d):
+    def gene_Z(self, SNP_Z, gene_SNP_w, gene_SNP_d):
         gene_Z = list()
         SNP_gene_Z = dict()
-        for snp in self.SNP_Z:
+        for snp in SNP_Z:
             SNP_gene_Z[snp] = dict()
         for gene in gene_SNP_w:
             for sw in gene_SNP_w[gene]:
@@ -119,7 +122,7 @@ class SNP_on_gene_utils:
             while True:
                 try:
                     snp = next(it)
-                    sz = snp[1] * self.SNP_Z[snp[0]] / gene_SNP_d[gene]
+                    sz = snp[1] * SNP_Z[snp[0]] / gene_SNP_d[gene]
                     SNP_gene_Z[snp[0]][gene] = sz + SNP_gene_Z[snp[0]][gene]
                     gz = gz + sz
                 except StopIteration:

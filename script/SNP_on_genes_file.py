@@ -6,16 +6,19 @@
 # BPend: end of gene in base positions
 # Z: resulting Z-score
 # PV:associated p-value
-# Int_Spl: flag for the two cases
+# Int_Spl: flag for the two cases, structural: 0, splicing: 1
 
 from scipy import stats
 import SNP_exon_param as P
 import SNP_on_genes_utils as SG
 
-if __name__ == "__main__":
+def SNP_on_gene_file():
     sg = SG.SNP_on_gene_utils()
-    gene_Z_in, _ = sg.gene_Z(sg.gene_SNP_in_w, sg.denom_in(sg.gene_SNP_in_w))
-    gene_Z_out, _ = sg.gene_Z(sg.gene_SNP_out_w, sg.denom_out(sg.gene_SNP_out_w))
+    SNP_Z = sg.read_SNP_Z()
+    gene_SNP_in_w = sg.read_dist_in(SNP_Z)
+    gene_Z_in, _ = sg.gene_Z(SNP_Z, gene_SNP_in_w, sg.denom_in(gene_SNP_in_w))
+    gene_SNP_out_w = sg.read_dist_out(SNP_Z)
+    gene_Z_out, _ = sg.gene_Z(SNP_Z, gene_SNP_out_w, sg.denom_out(gene_SNP_out_w))
     gene_Z_in = sg.tuple_list_to_dict(gene_Z_in)
     gene_Z_out = sg.tuple_list_to_dict(gene_Z_out)
     file = P.geneZ_file
@@ -36,3 +39,6 @@ if __name__ == "__main__":
             out.write(ln)
     out.close()
     print('Result for genes written in', P.geneZ_file)
+
+if __name__ == "__main__":
+    SNP_on_gene_file()
