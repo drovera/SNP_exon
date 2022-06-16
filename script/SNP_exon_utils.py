@@ -103,26 +103,6 @@ def curve_fit(xdata, ydata, func, bounds=None):
     print('Estimated covariance, standard deviation errors on the parameter:', perr)
     return popt
 
-def std_adjust_2param(xdata, ydata, func, start, delta, shrink, max_iter):
-    delta = np.array(delta)
-    min_std = 1
-    go_on, iter = True, 0
-    while go_on and iter < max_iter:
-        go_on, iter = False, iter + 1
-        for i1 in range(-1, 2):
-            for i2 in range(-1, 2):
-                p0, p1 = start[0] + delta[0] * i1, start[1] + delta[1] * i2
-                std = np.sum(np.square(func(xdata, p0, p1) - ydata)) / len(xdata)
-                if std < min_std:
-                    min_std, start = std, (p0, p1)
-                    go_on = True
-        delta = shrink * delta
-    if iter == max_iter:
-        print('Result by max iteration:', end='\t')
-    else:
-        print('Result by shrinkage:', end='\t')
-    print('param:', start, 'std:', min_std, sep='\t')
-    return start
 
 def cumul_number(xd):
     cx = np.zeros(len(xd) + 1)

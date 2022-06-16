@@ -22,9 +22,9 @@ result_dir = root + 'result/'
 ### update inf_pv, sup_pv and SNP_R by SNP_analyse ###
 # Parameters shape and scale, gamma law min distance SNP - exons computed on SNPs inside genes
 ### update shape and scale by SNP_exon_analyse.py ###
-datas = ['ebi_006719',      # 0
+datas = ['ebi_006719']      # 0
          # http://ftp.ebi.ac.uk/pub/databases/gwas/summary_statistics/GCST006001-GCST007000/GCST006719
-        ]
+
 data_src = 0
 if data_src == 0:
     data = datas[data_src]
@@ -42,11 +42,15 @@ else:
 
 # Choice of option for result and result files #
 
-# SNP_on_genes_top.py : Top number to display result, 0 if computing from a list of genes
+# SNP_on_genes_top.py and SNP_exon_dist_Z.py:
+# Top number to display result in SNP_on_genes_top.py for gene and in SNP_exon_dist_Z.py for SNP
+# 0 if computing from a list of genes, limit the number of genes used for computing detailed results
 top = 0
-# if top equals to 0, gene list file in input, use for detailed contribution of SNP
-gene_list = 'VEGA50'
-gene_list_file = result_dir + 'GL_' + gene_list + '.txt'
+# if top equals to 0, gene list file in input for detailed contribution of SNP
+# as array by SNP_on_genes_top.py
+# as graph by SNP_exon_dist_Z.py
+gene_list = 'ebi_006719_top12'
+gene_list_file = result_dir + gene_list + '.txt'
 
 # Result for gene as table
 geneZ_file = result_dir + data + '_Zgn.txt'

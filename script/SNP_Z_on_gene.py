@@ -10,6 +10,7 @@ import SNP_on_genes_utils as SG
 
 log_dir = 'C:/Users/danie/Documents/data/algo/'
 
+
 class SNP_Z_on_gene:
 
     def write_log(self, gene_SNP_out_w):
@@ -58,12 +59,10 @@ class SNP_Z_on_gene:
                     sum_ += item[1] * item[2]
                 else:
                     result.append((prev[0], SNP_Z[prev[0]], sum_ / gene_denom[prev[3]], prev[3], gene_Z[prev[3]]))
-                    #print(prev[0], sum_, prev[3], sep='\t')
                     prev = item
                     sum_ = prev[1] * prev[2]
             except StopIteration:
                 result.append((prev[0], SNP_Z[prev[0]], sum_ / gene_denom[prev[3]], prev[3], gene_Z[prev[3]]))
-                #print(prev[0], sum_, prev[3], sep='\t')
                 break
         print('SNP\tSNP_Z\tZ_to_gene\tgene\tgene_Z')
         for r in result:

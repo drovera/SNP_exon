@@ -61,7 +61,7 @@ class SNP_on_gene_analyse:
         gene_Z_out = self.sg.tuple_list_to_dict(gene_Z_out)
         gene_list_in, gene_list_Z_in = list(), list()
         gene_list_out, gene_list_Z_out = list(), list()
-        list_file = P.root + 'result/GL_' + P.gene_list + '.txt'
+        list_file = P.root + 'result/' + P.gene_list + '.txt'
         result_file = P.root + 'result/' + P.data + '_' + P.gene_list + '.txt'
         out = open(result_file, mode='w')
         print('List of genes red from', list_file)
@@ -113,7 +113,11 @@ if __name__ == "__main__":
     if P.top > 0:
         sog.gene_SNP_top(P.top)
     else:
-        sog.gene_SNP_list()
+        try:
+            sog.gene_SNP_list()
+        except FileNotFoundError:
+            print('File Error, check name in parameters or directory')
+
 
 
 
