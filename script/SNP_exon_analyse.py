@@ -1,7 +1,7 @@
 # daniel.rovera@gmail.com Institut Curie - Mines Paris Tech
 # Analyse of relative positions of SNP to exons
 # Fit gamma distribution and give parameters shape and scale
-# Visualize this analyse with graphs
+# Visualize this analysis with graphs
 
 
 from scipy import stats
@@ -67,7 +67,7 @@ class SNP_exon_analyse:
         cxa, cya = U.cumul_number(min_dist_all)
         cxb, cyb = U.cumul_number(min_dist_btw)
         cxo, cyo = U.cumul_number(min_dist_out)
-        plt.title(P.data + ' minimal distance between SNP and exon en x, normalized cumulative number en y')
+        plt.title(P.source + ' minimal distance between SNP and exon en x, normalized cumulative number en y')
         plt.xscale('log')
         plt.plot(cxa, cya, label='all')
         plt.plot(cxb, cyb, label='in genes')
@@ -75,7 +75,7 @@ class SNP_exon_analyse:
         plt.legend()
         print('Fitting for all SNPs')
         param = U.curve_fit(cxa, cya, U.gamma_cdf)
-        title = P.data + ' min distance from all SNPs to exons / normalized cumulative number\n'
+        title = P.source + ' min distance from all SNPs to exons / normalized cumulative number\n'
         title = title + 'Gamma law, shape=' + '{:.5f}'.format(param[0]) + ', scale=' + '{:.0f}'.format(param[1])
         std = U.gamma_draw_fit(cxa, cya, U.gamma_cdf, param, title=title)
         print('shape\tscale\tstd')
@@ -86,16 +86,16 @@ class SNP_exon_analyse:
         '''
         print('\nFitting for SNPs inside genes')
         param = U.curve_fit(cxb, cyb, U.gamma_cdf)
-        title = P.data + ' min distance from SNPs inside genes to exons / normalized cumulative number\n'
+        title = P.source + ' min distance from SNPs inside genes to exons / normalized cumulative number\n'
         title = title + 'Gamma law, shape=' + '{:.5f}'.format(param[0]) + ', scale=' + '{:.0f}'.format(param[1])
         std = U.gamma_draw_fit(cxb, cyb, U.gamma_cdf, param, title=title)
         print('shape\tscale\tstd')
         print(param[0], param[1], std, sep='\t')
         bin_nb = 1000
-        U.plot_histo(cxb, bin_nb, P.data + ' minimal distance from SNPs inside gene to exons', noyticks=True)
+        U.plot_histo(cxb, bin_nb, P.source + ' minimal distance from SNPs inside gene to exons', noyticks=True)
         ax = plt.figure(figsize=(7.0, 7.0)).add_subplot()
         stats.probplot(cxb, dist=stats.gamma, sparams=param, plot=ax)
-        ax.set_title(P.data + ' minimal distance from SNPs inside gene to exons\ngamma with parameters ' + str(param))
+        ax.set_title(P.source + ' minimal distance from SNPs inside gene to exons\ngamma with parameters ' + str(param))
         ax.get_lines()[0].set_markersize(3.0)
         print()
         print('Result as parameters of gamma distribution, to adjust and copy in parameters:')

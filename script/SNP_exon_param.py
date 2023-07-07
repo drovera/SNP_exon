@@ -1,92 +1,78 @@
 # daniel.rovera@gmail.com Institut Curie - Mines Paris Tech
-# common parameters: dir, files, sources, intermediate, results ...
+# common parameters: directories, files, data sources, parametres of scripts, results ...
 
-#########################################
 
-# Structure of directories to update #
-root = 'C:/Users/danie/Documents/SNP_exon/'
-ref_dir = root + 'ref/'
-dta_dir = root + 'dta/'
-result_dir = root + 'result/'
+############### directories #################
+your_root = 'C:/Users/gisel/Documents/SNP_exon/'
+source = 'ebi_006719'
+# http://ftp.ebi.ac.uk/pub/databases/gwas/summary_statistics/GCST006001-GCST007000/GCST006719
+ref_dir = your_root + 'ref/'
+dta_dir = your_root + source + '/dta/'
+ldcor_dir = your_root + source + '/LD_corr/'
+result_dir = your_root + source + '/result/'
+abnor_dir = your_root + source + '/abnor/'
+#############################################
 
-#################################################################
+############### ref common files, format in manual ################
+exon_file = ref_dir + 'exon_pos.txt'  # positions of numbered exons
+gene_file = ref_dir + 'gene_pos.txt'  # positions of genes
+###################################################################
 
-# GWAS sources and their features, choice the source by GWAS_src #
+################## parameters to read GWAS data ######################
+GWAS_file = dta_dir + 'ebi_006719_download.txt'
+title_line = True  # if title line generally
+SNP_chr, SNP_name, SNP_bp, SNP_pv = 0, 1, 2, 6  # position of fields
+inf_pv, sup_pv = 0, 1  # values limits of p_values
+shape = 0.4538  # computed by SNP_exon_analyse.py
+scale = 34094.3  # computed by SNP_exon_analyse.py
+######################################################################
 
-# Name of analysed data: data
-# Positions of used fields, File with header, first column = 0
-# chromosome: SNP_chr, name of SNP: SNP_name , base position: SNP_bp, p-value: SNP_pv
-# inf_pv, sup_pv are limits of p-value to eliminate eventually outlier p-values
-# start values are inf_pv, sup_pv = 0.0, 1.0
-# Correlation coefficient between SNP p-value: SNP_R
-### update inf_pv, sup_pv and SNP_R by SNP_analyse ###
-# Parameters shape and scale, gamma law min distance SNP - exons computed on SNPs inside genes
-### update shape and scale by SNP_exon_analyse.py ###
-datas = ['ebi_006719']      # 0
-         # http://ftp.ebi.ac.uk/pub/databases/gwas/summary_statistics/GCST006001-GCST007000/GCST006719
+################ source common files, format in manual ###################
+pvZ_file = dta_dir + source + '_pvZ.txt'  # valid SNP, p-value and Z-score
+sed_file = dta_dir + source + '_sed.txt'  # distances between SNP and exons
+gene_list = ldcor_dir + '_list_g.txt'
+##########################################################################
 
-data_src = 0
-if data_src == 0:
-    data = datas[data_src]
-    SNP_file = dta_dir + 'ebi_006719_download.txt'
-    title_line = True
-    SNP_chr, SNP_name, SNP_bp, SNP_pv = 0, 1, 2, 6
-    inf_pv, sup_pv = 0, 1
-    SNP_R = 0.9994
-    shape = 0.4538
-    scale = 34094.3
-else:
-    data = 'unknown'
+################# result files ###########################
+gene_Z_file_default = result_dir + source + '_Zgd.txt'
+gene_Z_file_ldcorr = result_dir + source + '_Zgc.txt'
+##########################################################
 
-##############################################################################
+############## Linkage desiquilibrium correlation coefficient ##################
+### values by default ###
+def_LDcorr = 0.63  # computed by SNP_exon_corr.py
+default_option = False  # use only default LD correlation coefficient above to compute Z-score of genes
+################################################################################
 
-# Choice of option for result and result files #
+### function reading Linkage desiquilibrium correlation coefficient ###
+#  reading LD correlation files and return a dictionary[SNP1][SNP2] by group pf SNPs influencing a gene
+#  may be modified if file format of LD correlation is different
+def make_corr_dict(corr_file):
+    snps_one = list()
+    ld_cor = list()
+    for cline in open(corr_file):
+        cline = cline[0:-2]
+        sln = cline.split(';')
+        snps_one.append(sln[0])
+        ld_cor.append(1.0)
+        for i in range(1, len(sln)):
+            try:
+                ld_cor.append(float(sln[i]))
+            except ValueError:
+                ld_cor.append(def_LDcorr)
+    corr_dict = dict()
+    n = len(snps_one)
+    for r in range(n):
+        corr_dict[snps_one[r]] = dict()
+    for r in range(n):
+        for c in range(r, n):
+            ind = r * n - r * (r + 1) // 2 + c
+            corr_dict[snps_one[r]][snps_one[c]] = ld_cor[ind]
+            corr_dict[snps_one[c]][snps_one[r]] = ld_cor[ind]
+    return corr_dict
+###########################################################################################
 
-# SNP_on_genes_top.py and SNP_exon_dist_Z.py:
-# Top number to display result in SNP_on_genes_top.py for gene and in SNP_exon_dist_Z.py for SNP
-# 0 if computing from a list of genes, limit the number of genes used for computing detailed results
-top = 0
-# if top equals to 0, gene list file in input for detailed contribution of SNP
-# as array by SNP_on_genes_top.py
-# as graph by SNP_exon_dist_Z.py
-gene_list = 'ebi_006719_top12'
-gene_list_file = result_dir + gene_list + '.txt'
-
-# Result for gene as table
-geneZ_file = result_dir + data + '_Zgn.txt'
-# Chr: chromosome  # 0
-# Gene: gene, can be twice if internal and splicing effect   # 1
-# BPbeg: begin of gene as base position  # 2
-# BPend: end of gene as base position  # 3
-# Z: computed Z-score of gene  # 4
-# PV: p-value computed from Z-score   # 5
-# InOut: 0 if internal effect, 1 if splicing effect  # 6
-
-# SNP_Z_on_gene.py: the SNP Z threshold, choice by SNP_exon_dist_Z
-Z_SNP_thr = 4.0
-
-######################################################
-
-# Intermediate files
-
-# Intermediate file for computing Z score
-# 0: SNP_name
-# 1: SNP p-value
-# 2: SNP Z score
-pvZ_file = dta_dir + data +'_pvZ.txt'
-
-# Intermediate result for distance between SNP and exons, SNP exon distance
-sed_file = dta_dir + data + '_sed.txt'
-# Every SNP is twice, even the records are identical
-# fields for twice SNP
-# 0: chromosome
-# 1: relative position case
-# 2: SNP
-# 3: gene
-# 4: exon order
-# 5: distance SNP to exon
-
-# Labels of relative position cases
+################### Labels of relative position cases ######################
 cases = ['SNP inside exon',  # 0
          'SNP inside the same gene',  # 1
          'SNP inside the the 2 nearest genes',  # 2
@@ -94,58 +80,10 @@ cases = ['SNP inside exon',  # 0
          'SNP outside this gene but inside the other nearest gene',  # 4
          'SNP between exons and outside the 2 nearest genes ',  # 5
          'SNP at the extremities and outside all genes']  # 6
+#############################################################################
 
-########################################################################################
-
-# Position of exons and genes from NIH #
-
-# Extraction by chromosome from NIH: parameter and output
-### launch in first exons_from_NIH_nh after extracting sequence files ###
-# refSeq from NIH genome - https://www.ncbi.nlm.nih.gov/genome/?term=homo+sapiens+%5Borgn%5D
-extract_from_NIH = ref_dir + 'NIHsequence/sequence_chr'
-
-# Description of exon_pos.txt
-# 0: chromosome
-# 1: begin base position
-# 2: end base position
-# 3: NIH name of gene
-# 4: exon order
-exon_file = ref_dir + 'exon_pos.txt'
-
-# Description of gene_pos.txt
-# 0: chromosome
-# 1: begin base position
-# 2: end base position
-# 3: NIH name
-# 4: exon number
-gene_file = ref_dir + 'gene_pos.txt'
-
-# Abnormality of extraction are listed in
-NIH_abn = ref_dir + 'exon_abn.txt'
-
-# Chromosome size
-chr_size = [
-248956422,
-242193529,
-198295559,
-190214555,
-181538259,
-170805979,
-159345973,
-145138636,
-138394717,
-133797422,
-135086622,
-133275309,
-114364328,
-107043718,
-101991189,
-90338345,
-83257441,
-80373285,
-58617616,
-64444167,
-46709983,
-50818468,
-156040895,
-57227415]
+################################# Chromosome size  ##########################################
+chr_size = [248956422, 242193529, 198295559, 190214555, 181538259, 170805979, 159345973, 145138636,
+            138394717, 133797422, 135086622, 133275309, 114364328, 107043718, 101991189, 90338345,
+            83257441, 80373285, 58617616, 64444167, 46709983, 50818468, 156040895, 57227415]
+##############################################################################################

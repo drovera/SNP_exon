@@ -11,8 +11,10 @@ The method described in analyse_GWAS_by_exon.pdf is based
 on the base position of exons and the statistical relation
 between positions of SNPs and positions of exons.
 
-This method is coherent with some biological knowledge by comparing
-to the usual method based on chi-deux statistics
+This method sheds light on the link between SNPs and
+their effect on gene production, what is coherent
+with some biological knowledge. The usual method
+based on chi-deux statistics does not shed this light.
 
 The manual to use Python scripts is SNP_exon_manual.pdf.
 The reference data are in ref and GWAS data are to be extracted

@@ -25,9 +25,15 @@ def read_exon():
         seq_pos[int(sq[0]) - 1].append((int(sq[2]), 2, sq[3], int(sq[4])))
     return seq_pos
 
+def read_SNP_Z():
+    SNP_Z = dict()
+    for ln in open(P.pvZ_file):
+        sln = ln.split()
+        SNP_Z[sln[0]] = float(sln[2])
+    return SNP_Z
 
 def read_SNP(log=False):
-    file = P.SNP_file
+    file = P.GWAS_file
     seq_pos = [list() for i in range(24)]
     snp_nb = 0
     SNP_pv = dict()

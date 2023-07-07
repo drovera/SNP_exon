@@ -5,6 +5,13 @@
 
 import SNP_exon_param as P
 
+### launch in first exons_from_NIH_nh after extracting sequence files ###
+# refSeq from NIH genome - https://www.ncbi.nlm.nih.gov/genome/?term=homo+sapiens+%5Borgn%5D
+extract_from_NIH = P.ref_dir + 'NIHsequence/sequence_chr'
+
+# Abnormality of extraction are listed in
+NIH_abn = P.ref_dir + 'exon_abn.txt'
+
 class Exons_from_NIH:
 
     def get_gene_name(self, line):
@@ -13,6 +20,7 @@ class Exons_from_NIH:
         return line[gb + len('gene='):ge]
 
     def get_loc(self, chr, line):
+        ''' localisation of exons '''
         locs = list()
         lb = line.find('location=')
         cp = line.find('complement', lb)
@@ -44,6 +52,7 @@ class Exons_from_NIH:
         return locs
 
     def seq_to_exon(self):
+        ''' write position of exons by gene and poisiton of genes '''
         repeated_gene = set()
         count_gene = list()
         count_exon = list()
@@ -53,7 +62,7 @@ class Exons_from_NIH:
             count_gene.append(0)
             count_exon.append(0)
         for chr in range(1, 25):
-            in_exon_file = P.extract_from_NIH + '{:02}'.format(chr) + '.txt'
+            in_exon_file = extract_from_NIH + '{:02}'.format(chr) + '.txt'
             genes = set()
             inf = open(in_exon_file)
             line = inf.readline()
@@ -91,14 +100,14 @@ class Exons_from_NIH:
     def write_seq(self):
         self.pos_o = open(P.exon_file, mode='w')
         self.gene_o = open(P.gene_file, mode='w')
-        self.abn_o = open(P.NIH_abn, mode='w')
+        self.abn_o = open(NIH_abn, mode='w')
         self.seq_to_exon()
         self.pos_o.close()
         self.gene_o.close()
         self.abn_o.close()
         print('\nExon sequence save in', P.exon_file)
         print('Gene area save in', P.gene_file)
-        print('Abnormalities save in', P.NIH_abn)
+        print('Abnormalities save in', NIH_abn)
 
 
 if __name__ == "__main__":

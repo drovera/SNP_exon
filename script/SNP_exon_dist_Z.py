@@ -1,18 +1,18 @@
 # daniel.rovera@gmail.com Institut Curie - Mines Paris Tech
 # Draw graph Z-score of SNP in function of min distance SNP exons
 # Graw graph to help choosing a threshold of Z-score to limit analysis of SNP effect
-#
 
 # Z_dist: list of (Z, min distance to exon, SNP)
 
 import SNP_exon_param as P
-import SNP_on_genes_utils as SG
+import SNP_exon_utils as U
 import numpy as np
 import matplotlib.pyplot as plt
 
 class SNP_exon_dist_Z:
 
     def read_distance(self):
+        ''' read only SNP with effect case 0, 1, 2 3'''
         min_dist_btw = dict()
         file = P.sed_file
         in_ = open(file)
@@ -36,11 +36,12 @@ class SNP_exon_dist_Z:
         return min_dist_btw
 
     def read_distance_by_gene(self, gene_list):
+        ''' distance SNPs inside genes to exons '''
         gene_set = set(gene_list)
         gene_snp, gene_d, gene_z = dict(), dict(), dict()
         for gene in gene_set:
             gene_snp[gene], gene_d[gene], gene_z[gene] = list(), list(), list()
-        snp_z = SG.SNP_on_gene_utils().read_SNP_Z()
+        snp_z = U.read_SNP_Z()
         file = P.sed_file
         in_ = open(file)
         while True:
@@ -81,6 +82,7 @@ class SNP_exon_dist_Z:
         return gene_snp, gene_d, gene_z
 
     def read_SNP_Z_dist(self):
+        ''' combine Z and distance '''
         min_dist_btw = self.read_distance()
         file = P.pvZ_file
         Z_dist = list()
@@ -98,12 +100,13 @@ class SNP_exon_dist_Z:
             d[i], z[i] = zd[1], zd[0]
             i += 1
         plt.scatter(d, z, s=1)
-        plt.title('Z-score, min distance SNP exons for ' + P.data)
+        plt.title('Z-score, min distance SNP exons for ' + P.source)
         plt.xlabel('min distance')
         plt.ylabel('Z-score')
         plt.axhline(c='black')
 
     def highest_d_z(self, Z_dist, part):
+        ''' draw extreme values histogram'''
         md, mz, nb, mx = list(), list(), list(), 0
         n, mn = 0, int(len(Z_dist) * part)
         for z_d in Z_dist:
@@ -116,80 +119,24 @@ class SNP_exon_dist_Z:
             if n > mn:
                 break
         fig, ax = plt.subplots(1, 2)
-        fig.suptitle('Part ' + str(part) + ' of all SNP for ' + P.data)
+        fig.suptitle('Part ' + str(part) + ' of all SNP for ' + P.source)
         ax[0].set_xlabel('max of min distance')
         ax[0].set_ylabel('Z-score')
         ax[0].plot(md, mz)
         ax[1].set_xlabel('number')
         ax[1].plot(nb, mz)
 
-    def print_top(self, top, Z_dist):
-        it = iter(Z_dist)
-        print('SNP\tZ\tmin_dist')
-        for _ in range(top):
-            z_d = next(it)
-            print(z_d[2], z_d[0], z_d[1], sep='\t')
 
     def draw_all_and_top(self, part_of_SNP):
-        Z_dist = sed.read_SNP_Z_dist()
-        sed.draw_d_z(Z_dist)
+        Z_dist = self.read_SNP_Z_dist()
+        self.draw_d_z(Z_dist)
         Z_dist.sort(reverse=True)
-        sed.print_top(P.top, Z_dist)
         for part in part_of_SNP:
-            sed.highest_d_z(Z_dist, part)
+            self.highest_d_z(Z_dist, part)
 
-    def draw_by_gene_from_list(self):
-        print('List of genes red from', P.gene_list_file)
-        gene_list = list()
-        for gene in open(P.gene_list_file):
-            gene = gene.replace('\r', '').replace('\n', '')
-            gene_list.append(gene)
-        gene_snp, gene_d, gene_z = self.read_distance_by_gene(gene_list)
-        print('gene\tSNP\tmin_dist\tSNP_Z')
-        for gene in gene_list:
-            snp_i, d_i, z_i = iter(gene_snp[gene]), iter(gene_d[gene]), iter(gene_z[gene])
-            while True:
-                try:
-                    print(gene, next(snp_i), next(d_i), next(z_i), sep='\t')
-                except StopIteration:
-                    break
-        maxd, minz, maxz = 0, 0.0, 0.0
-        for gene in gene_list:
-            if gene_d[gene]:
-                maxd = max(maxd, max(gene_d[gene]))
-            if gene_z[gene]:
-                minz = min(minz, min(gene_z[gene]))
-                maxz = max(maxz, max(gene_z[gene]))
-        lims = ', dist SNP-exon in [0, {0}], Z in [{1:.3f}, {2:.3f}]'.format(maxd, minz, maxz)
-        ig, n = iter(gene_list), 0
-        while True:
-            try:
-                if not n % 12:
-                    fig, ax = plt.subplots(3, 4)
-                    fig.suptitle(P.data + lims)
-                    for i in range(3):
-                        for j in range(4):
-                            ax[i, j].tick_params(left=False, right=False, labelleft=False,
-                                                 labelbottom=False, bottom=False)
-                    for i in range(3):
-                        for j in range(4):
-                            gene = next(ig)
-                            ax[i, j].scatter(gene_d[gene], gene_z[gene], s=1)
-                            ax[i, j].set_xlim([0, maxd])
-                            ax[i, j].set_ylim([minz, maxz])
-                            ax[i, j].axhline(c='blue', lw=1)
-                            ax[i, j].set_title(gene)
-            except StopIteration:
-                break
 
 if __name__ == "__main__":
     sed = SNP_exon_dist_Z()
-    if P.top > 0:
-        part_of_SNP = [0.01, 0.001, 0.0001]
-        sed.draw_all_and_top(part_of_SNP)
-    else:
-        try:
-            sed.draw_by_gene_from_list()
-        except FileNotFoundError:
-            print('File Error, check name in parameters or directory')
+    part_of_SNP = [0.01, 0.001, 0.0001]
+    sed.draw_all_and_top(part_of_SNP)
     plt.show()

@@ -26,10 +26,9 @@ class SNP_analyse:
         print('quantile\tvalue')
         for q in quant:
             print(q, np.quantile(SNP_pv, q), sep='\t')
-        U.plot_histo(SNP_pv, 1000, title=P.data + ' Histogram of p-values')
+        U.plot_histo(SNP_pv, 1000, title=P.source + ' Histogram of p-values')
 
     def fit_lin_log(self, inf_pv, sup_pv):
-        print('\nStep 2- Compute correlation coefficient between log of SNP p-values')
         print('Fixed limits of p-values', P.inf_pv, P.sup_pv)
         self.SNP_pv.sort()
         cx, cy = U.cumul_number(self.SNP_pv)
@@ -38,23 +37,12 @@ class SNP_analyse:
         i_max = np.where(cx < sup_pv)[0][-1]
         lx = np.log10(cx[i_min:i_max])
         ly = np.log10(cy[i_min:i_max])
-        plt.figure()
-        plt.title(P.data + ' linear adjustment of log p-value and log cumulative number')
-        plt.xticks(ticks=[], labels=[])
-        plt.yticks(ticks=[], labels=[])
-        plt.plot(lx, ly)
-        slope, intercept, r_value, p_value, std_err = stats.linregress(lx, ly)
-        plt.plot(lx, lx * slope + intercept, label='R=' + '{:.4f}'.format(r_value))
-        plt.legend()
         print('number of p-values', len(lx), 'out of a total of', len(self.SNP_pv))
         print('Real limits of p_values: [', cx[i_min], ', ', cx[i_max], ']', sep='')
-        print('r_value:', r_value)
-        print('p_value:', p_value)
-        print('std_err:', std_err)
 
 if __name__ == "__main__":
     # log = True to get details of excluded p-values
-    log = False
+    log = True
     sa = SNP_analyse()
     sa.outliers()
     sa.fit_lin_log(P.inf_pv, P.sup_pv)

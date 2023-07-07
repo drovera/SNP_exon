@@ -7,9 +7,7 @@ import SNP_exon_param as P
 import SNP_exon_utils as U
 
 def SNP_compute_Z():
-    # log = True to get details of excluded p-values
-    log = False
-    _, SNP_pv = U.read_SNP(log)
+    _, SNP_pv = U.read_SNP(log = False)
     out = open(P.pvZ_file, mode='w')
     print('Infinity result of computing Z score')
     inf_pos, inf_neg = 0, 0
