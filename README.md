@@ -13,12 +13,12 @@ between positions of SNPs and positions of exons.
 
 This method sheds light on the link between SNPs and
 their effect on gene production, what is coherent
-with some biological knowledge. The usual method
-based on chi-deux statistics does not shed this light.
+with some biological knowledge.
 
-The manual to use Python scripts is SNP_exon_manual.pdf.
+The manual to use Python and R scripts (if extraction LD correlation
+coefficients by LDlinkR) is SNP_exon_manual.pdf.
 The reference data are in ref and GWAS data are to be extracted
-from catalogs as NHGRI-EBI
+from catalogs as NHGRI-EBI.
 
 
 daniel.rovera@gmail.com Institut Curie - Mines Paris Tech

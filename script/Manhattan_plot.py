@@ -10,7 +10,7 @@
 # 5: PV: p-value of gene
 # 6: Int\_Spl: 0 or 1, 0: SNP inside exon, 1: SNP inside gene influencing splicing
 
-
+import os
 import numpy as np
 import SNP_exon_param as P
 import matplotlib.pyplot as plt
@@ -82,8 +82,15 @@ class Manhattan_plot:
         ax.plot([0, self.lim], [-np.log10(sig_thresh2), -np.log10(sig_thresh2)], lw=1, color='black')
 
 if __name__ == "__main__":
-    if P.default_option:
-        Manhattan_plot().plot(P.gene_Z_file_default)
-    else:
-        Manhattan_plot().plot(P.gene_Z_file_ldcorr)
+    fig1 = False
+    if os.path.isfile(P.gene_Z_file_fitLD):
+        fig1 = True
+        print('fig1: ', end='')
+        print('Manhattan plot for LD correlation coefficient computed by fitting')
+        Manhattan_plot().plot(P.gene_Z_file_fitLD)
+    if os.path.isfile(P.gene_Z_file_LDcorr):
+        if fig1:
+            print('fig2: ', end='')
+        print('Manhattan plot for LD correlation coefficient extracted from repository')
+        Manhattan_plot().plot(P.gene_Z_file_LDcorr)
     plt.show()

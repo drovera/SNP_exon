@@ -143,3 +143,34 @@ def gamma_pdf(x, shape, scale):
 def weight_f(d):
     return gamma_pdf(d, P.shape, P.scale)
 
+# Compute linkage disequilibrium correlation from fitting
+# ref: Linkage disequilibrium patterns of the human genome across populations
+def LD_corr(d):
+    return np.sqrt(1/(1 + 0.017 * np.sqrt(d)))
+
+### function reading Linkage desiquilibrium correlation coefficient ###
+#  reading LD correlation files and return a dictionary[SNP1][SNP2] by group pf SNPs influencing a gene
+#  may be modified if file format of LD correlation is different
+def make_corr_dict(corr_file):
+    snps_one = list()
+    ld_cor = list()
+    for cline in open(corr_file):
+        cline = cline[0:-2]
+        sln = cline.split(';')
+        snps_one.append(sln[0])
+        ld_cor.append(1.0)
+        for i in range(1, len(sln)):
+            try:
+                ld_cor.append(float(sln[i]))
+            except ValueError:
+                ld_cor.append(P.def_LDcorr)
+    corr_dict = dict()
+    n = len(snps_one)
+    for r in range(n):
+        corr_dict[snps_one[r]] = dict()
+    for r in range(n):
+        for c in range(r, n):
+            ind = r * n - r * (r + 1) // 2 + c
+            corr_dict[snps_one[r]][snps_one[c]] = ld_cor[ind]
+            corr_dict[snps_one[c]][snps_one[r]] = ld_cor[ind]
+    return corr_dict

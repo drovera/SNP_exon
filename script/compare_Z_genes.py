@@ -10,7 +10,7 @@ import SNP_exon_param as P
 ################ sources for comparison in result dir ##############
 # if format different from SNP exon with title line, input fields
 # source: file, SNP exon format or not, gene_field, Z_field
-source_1 = [P.gene_Z_file_ldcorr, True, -1, -1]
+source_1 = [P.gene_Z_file_LDcorr, True, -1, -1]
 # source 2:
 source_2 = [P.result_dir + 'ebi_006719.genes.out$.txt', False, 0, 7]
 #####################################################################

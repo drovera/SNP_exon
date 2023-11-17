@@ -17,21 +17,20 @@ import os
 import numpy as np
 from scipy import stats
 import SNP_exon_param as P
+import SNP_exon_utils as U
 
 
 def get_Z_W(gene_file):
     snps, Z, W = list(), list(), list()
     for line in open(gene_file):
-        line = line[0:-2]
         sln = line.split(';')
         snps.append(sln[0])
         Z.append(float(sln[1]))
         W.append(float(sln[2]))
     return snps, Z, W
 
-
 def comp_gene_Z_corr(corr_file, gene_file):
-    corr_dict = P.make_corr_dict(corr_file)
+    corr_dict = U.make_corr_dict(corr_file)
     snps, Z, W = get_Z_W(gene_file)
     n = len(snps)
     R = np.zeros([n, n])
@@ -59,38 +58,30 @@ def comp_gene_Z_default(gene_file):
     return np.dot(W, Z) / np.sqrt(np.matmul(np.matmul(W, R), np.transpose(W)))
 
 
-def compute_gene_Z(default=False):
+def compute_gene_Z():
     gene_Z = dict()
     for entry in os.scandir(P.ldcor_dir):
         if entry.path.endswith('_g.txt') and not entry.name.startswith('_'):
             gene_file = entry.path
             gene_pos = entry.name[0:-6]
             corr_file = entry.path[0:-6] + '_c.txt'
-            if default:
+            if os.path.exists(corr_file):
+                gZ = comp_gene_Z_corr(corr_file, gene_file)
+                print(gene_pos, 'c', sep='\t')
+            else:
                 gZ = comp_gene_Z_default(gene_file)
                 print(gene_pos, 'd', sep='\t')
-            else:
-                if os.path.exists(corr_file):
-                    gZ = comp_gene_Z_corr(corr_file, gene_file)
-                    print(gene_pos, 'c', sep='\t')
-                else:
-                    gZ = comp_gene_Z_default(gene_file)
-                    print(gene_pos, 'd', sep='\t')
             gene_Z[gene_pos] = gZ
     return gene_Z
 
 
-def save_Z_genes(default=False):
-    gene_Z = compute_gene_Z(default=default)
+def save_Z_genes():
+    gene_Z = compute_gene_Z()
     g_in = open(P.gene_file)
     g_in.readline()  # title line
     line = g_in.readline()
-    if default:
-        file = P.gene_Z_file_default
-    else:
-        file = P.gene_Z_file_ldcorr
+    file = P.gene_Z_file_LDcorr
     gz_out = open(file, mode='w')
-    print('Compute PV abd save in', file)
     gz_out.write('Chr\tGene\tBPbeg\tBPend\tZ\tPV\tInt_Spl\n')
     while line:
         spl = line.split()
@@ -113,4 +104,4 @@ def save_Z_genes(default=False):
 
 
 if __name__ == "__main__":
-    save_Z_genes(default=P.default_option)
+    save_Z_genes()

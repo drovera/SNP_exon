@@ -1,10 +1,9 @@
 # daniel.rovera@gmail.com Institut Curie - Mines Paris Tech
 # Information to eliminate outlier p-values: histogram and quantiles
-# Compute correlation coefficient between p-values
+
 
 import numpy as np
 import matplotlib.pyplot as plt
-from scipy import stats
 import SNP_exon_param as P
 import SNP_exon_utils as U
 
@@ -12,7 +11,7 @@ import SNP_exon_utils as U
 class SNP_analyse:
 
 
-    def __init__(self):
+    def __init__(self, log):
         _, SNP_pv_dict = U.read_SNP(log=log)
         self.SNP_pv = list(SNP_pv_dict.values())
 
@@ -43,7 +42,7 @@ class SNP_analyse:
 if __name__ == "__main__":
     # log = True to get details of excluded p-values
     log = True
-    sa = SNP_analyse()
+    sa = SNP_analyse(log)
     sa.outliers()
     sa.fit_lin_log(P.inf_pv, P.sup_pv)
     plt.show()

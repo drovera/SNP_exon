@@ -3,7 +3,7 @@
 # produce a list usable to search the LD correlation coefficients
 
 import SNP_exon_param as P
-import scipy.stats as stats
+import SNP_exon_utils as U
 
 def save_by_gene():
     SNP_Z = dict()
@@ -22,7 +22,7 @@ def save_by_gene():
                 snp_zws.append((sln[3] + '_0', sln[2], SNP_Z[sln[2]], '1.0'))
             prev_SNP = sln[2]
         if sln[1] in {'1', '2', '3'}:
-            wgt = str(stats.gamma.pdf(float(sln[5]), P.shape, scale=P.scale))
+            wgt = str(U.weight_f(float(sln[5])))
             snp_zws.append((sln[3] + '_1', sln[2], SNP_Z[sln[2]], str(wgt)))
     snp_zws.sort()  # sort by gene, twice SNPs side by side as in sef_file
     print(file_in, 'red')
